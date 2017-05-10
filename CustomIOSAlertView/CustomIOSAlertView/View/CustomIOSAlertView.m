@@ -12,6 +12,8 @@
 #import "CustomIOSAlertView.h"
 #import <QuartzCore/QuartzCore.h>
 
+#define WZCustomAlertView_BORDER_WIDTH_1PX ([UIScreen mainScreen].scale > 0.0 ? 1.0 / [UIScreen mainScreen].scale : 1.0)
+
 const static CGFloat kCustomIOSAlertViewDefaultButtonHeight       = 50;
 const static CGFloat kCustomIOSAlertViewDefaultButtonSpacerHeight = 1;
 const static CGFloat kCustomIOSAlertViewCornerRadius              = 7;
@@ -208,11 +210,11 @@ CGFloat buttonSpacerHeight = 0;
     // First, we style the dialog to match the iOS7 UIAlertView >>>
     CAGradientLayer *gradient = [CAGradientLayer layer];
     gradient.frame = dialogContainer.bounds;
-    gradient.colors = [NSArray arrayWithObjects:
-                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
-                       (id)[[UIColor colorWithRed:233.0/255.0 green:233.0/255.0 blue:233.0/255.0 alpha:1.0f] CGColor],
-                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
-                       nil];
+//    gradient.colors = [NSArray arrayWithObjects:
+//                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
+//                       (id)[[UIColor colorWithRed:233.0/255.0 green:233.0/255.0 blue:233.0/255.0 alpha:1.0f] CGColor],
+//                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
+//                       nil];
 
     CGFloat cornerRadius = kCustomIOSAlertViewCornerRadius;
     gradient.cornerRadius = cornerRadius;
@@ -228,7 +230,7 @@ CGFloat buttonSpacerHeight = 0;
     dialogContainer.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:dialogContainer.bounds cornerRadius:dialogContainer.layer.cornerRadius].CGPath;
 
     // There is a line above the button
-    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, dialogContainer.bounds.size.height - buttonHeight - buttonSpacerHeight, dialogContainer.bounds.size.width, buttonSpacerHeight)];
+    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, dialogContainer.bounds.size.height - buttonHeight - buttonSpacerHeight, dialogContainer.bounds.size.width, WZCustomAlertView_BORDER_WIDTH_1PX)];
     lineView.backgroundColor = [UIColor colorWithRed:198.0/255.0 green:198.0/255.0 blue:198.0/255.0 alpha:1.0f];
     [dialogContainer addSubview:lineView];
     // ^^^
@@ -238,6 +240,11 @@ CGFloat buttonSpacerHeight = 0;
 
     // Add the buttons too
     [self addButtonsToView:dialogContainer];
+    
+    // Add the buttons middle line
+    UIView *midLine = [[UIView alloc] initWithFrame:CGRectMake(dialogContainer.frame.size.width / 2.0, lineView.frame.origin.y + 15.0, WZCustomAlertView_BORDER_WIDTH_1PX, 20)];
+    midLine.backgroundColor = [UIColor colorWithRed:198.0/255.0 green:198.0/255.0 blue:198.0/255.0 alpha:1.0f];
+    [dialogContainer addSubview:midLine];
 
     return dialogContainer;
 }
@@ -246,24 +253,26 @@ CGFloat buttonSpacerHeight = 0;
 - (void)addButtonsToView: (UIView *)container
 {
     if (buttonTitles==NULL) { return; }
-
+    
     CGFloat buttonWidth = container.bounds.size.width / [buttonTitles count];
-
-    for (int i=0; i<[buttonTitles count]; i++) {
-
+    
+    for (int i = 0; i < buttonTitles.count; i++) {
+        
         UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-
+        closeButton.backgroundColor = [UIColor whiteColor];
         [closeButton setFrame:CGRectMake(i * buttonWidth, container.bounds.size.height - buttonHeight, buttonWidth, buttonHeight)];
-
+        
         [closeButton addTarget:self action:@selector(customIOS7dialogButtonTouchUpInside:) forControlEvents:UIControlEventTouchUpInside];
         [closeButton setTag:i];
-
+        
         [closeButton setTitle:[buttonTitles objectAtIndex:i] forState:UIControlStateNormal];
-        [closeButton setTitleColor:[UIColor colorWithRed:0.0f green:0.5f blue:1.0f alpha:1.0f] forState:UIControlStateNormal];
+        [closeButton setTitleColor:_buttonTitlesColor[i] forState:UIControlStateNormal];
         [closeButton setTitleColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:0.5f] forState:UIControlStateHighlighted];
         [closeButton.titleLabel setFont:[UIFont boldSystemFontOfSize:14.0f]];
+        closeButton.titleLabel.numberOfLines = 0;
+        closeButton.titleLabel.textAlignment = NSTextAlignmentCenter;
         [closeButton.layer setCornerRadius:kCustomIOSAlertViewCornerRadius];
-
+        
         [container addSubview:closeButton];
     }
 }
